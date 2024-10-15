@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phần mềm bảo hành HomeOS</title>
+    <link rel="icon" href="./assets/img/Logo-Home-OS-crop.png" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include Toastify CSS and JS for notifications -->
+    <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src=""></script>
+    <!-- Include html5-qrcode for QR code scanning -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- Include QRCode.js for QR code generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Include QRCode library for generating data URLs -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .app-bar {
+            background-color: #1976d2;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .app-bar h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .content h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        #qrCode, #reader {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #1565c0;
+        }
+
+        /* Bottom Navigation */
+        .bottom-navigation {
+            display: flex;
+            justify-content: space-around;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-top: 1px solid #ddd;
+            padding: 10px 0;
+            box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .bottom-navigation button {
+            background-color: transparent;
+            border: none;
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bottom-navigation button:focus {
+            color: #1976d2;
+        }
+
+        .bottom-navigation button img {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 5px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        #toast-container {
+            font-size: 14px;
+        }
+        #qrCode {
+            width: 100%;
+            text-align: center;
+        }
+        #qrCode img {
+            display: inline !important;
+        } 
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="app-bar">
+            <h2>Phần mềm bảo hành HomeOS</h2>
+        </div>
+
+        <div class="content">
+            <!-- Tab Content -->
+            <div id="tab-0" class="tab-content active">
+                <img src="./assets/img/Screenshot 2024-10-11 103819.png" alt="Create QR Code" style="width: 80px; margin-bottom: 5px;">
+                <h3>Tạo QR Code</h3>
+                <input class="form-control" type="text" id="qrText" placeholder="Nhập nội dung QR Code cần tạo!">
+                <div id="qrCode"></div>
+            </div>
+
+            <div id="tab-1" class="tab-content">
+                <img src="./assets/img/Screenshot 2024-10-11 103958.png" alt="Create QR Code" style="width: 80px; margin-bottom: 5px;">
+                <h3>Quét QR Code</h3>
+                <div id="reader"></div>
+                <div id="scannedResult"></div>
+                <button class="w-100" id="scanAgain">Quét lại</button>
+            </div>
+            <div id="tab-2" class="tab-content">
+                <img src="./assets/img/Screenshot 2024-10-11 103819.png" alt="Create QR Code" style="width: 80px; margin-bottom: 5px;">
+                <h3>Tạo nhiều QR Code</h3>
+                <input type="number" class="form-control" id="startValue" placeholder="Nhập số lượng mã QR cần in">
+                <button class="w-100" id="generateQRCodes">Tạo QR Codes</button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-navigation">
+            <button data-tab="0">
+                <img src="./assets/img/Screenshot 2024-10-11 103819.png" alt="Tạo QR">
+                Tạo QR
+            </button>
+            <button data-tab="1">
+                <img src="./assets/img/Screenshot 2024-10-11 103958.png" alt="Quét QR">
+                Quét QR
+            </button>
+            <button data-tab="2">
+                <img src="./assets/img/Screenshot 2024-10-11 103819.png" alt="Tạo nhiều QR">
+                Tạo nhiều QR
+            </button>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let value = 0; // Track selected menu item
+            let scannedResult = '';
+            let qrText = '';
+            let startValue = 1;
+            let scanner = null;
+            const user_id = localStorage.getItem("USERID");
+            const session = localStorage.getItem("UUIDTOKEN_PRINT");
+
+            // Handle tab switching
+            $('.bottom-navigation button').click(function () {
+                value = $(this).data('tab');
+                $('.tab-content').removeClass('active');
+                $('#tab-' + value).addClass('active');
+                if (value == 1) {
+                    startScanner();
+                } else {
+                    if (scanner) {
+                        scanner.clear();
+                        scanner = null;
+                    }
+                }
+            });
+
+            // Handle QR Text input
+            $('#qrText').on('input', function () {
+                qrText = $(this).val();
+                if (qrText) {
+                    $('#qrCode').empty();
+                    new QRCode(document.getElementById("qrCode"), qrText);
+                } else {
+                    $('#qrCode').empty();
+                }
+            });
+
+            // Start QR Code scanner
+            function startScanner() {
+                if (!scanner) {
+                    scanner = new Html5QrcodeScanner(
+                        "reader",
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 }
+                        },
+                        false
+                    );
+
+                    scanner.render(onScanSuccess, onScanFailure);
+                }
+            }
+
+            function onScanSuccess(result) {
+                scannedResult = result;
+                $('#scannedResult').html('<p>Scanned Result:</p><p>' + scannedResult + '</p>');
+                callAPI(result);
+                if (scanner) {
+                    scanner.clear();
+                }
+            }
+
+            function onScanFailure(error) {
+                // Handle scan failure
+            }
+
+            $('#scanAgain').click(function () {
+                $('#scannedResult').empty();
+                if (scanner) {
+                    scanner.clear();
+                    scanner.render(onScanSuccess, onScanFailure);
+                } else {
+                    startScanner();
+                }
+            });
+
+            // Handle Generate Multiple QR Codes
+            $('#generateQRCodes').click(function () {
+                startValue = parseInt($('#startValue').val()) || 1;
+                getTranNo();
+            });
+
+            
+
+            // API functions (you need to define these functions or adjust accordingly)
+            function callAPI(result) {
+                const willInsertData = {
+                    QR_CODE: result,
+                    MA_SAN_PHAM: 1,
+                    DATE_CREATE: new Date(),
+                    USER_ID: user_id,
+                    DATASTATE: "ADD",
+                };
+                getDM('DM_QRCODE', "QR_CODE='" + result + "'").then(data => {
+                    try {
+                        if (data.length == 0) {
+                            add(user_id, session, 'DM_QRCODE', willInsertData).then(data => {
+                                try {
+                                    toastr.success("Quét QR và lưu thông tin thành công!");
+                                } catch (e) { }
+                            }).catch(err => {
+                                console.error('Error:', err);
+                            });
+                        } else {
+                            toastr.success("Quét QR thành công!");
+                        }
+                    } catch (e) { }
+                }).catch(err => { });
+            }
+
+            function updateTranNo(result, tableName, tranNo, lengthKey) {
+                const willInsertData = {
+                    PR_KEY: 15,
+                    TABLE_NAME: tableName,
+                    TRAN_NO: tranNo,
+                    ORGANIZATION_ID: '',
+                    AUTO_KEY: result,
+                    LENGTH_KEY: lengthKey,
+                    DATASTATE: "EDIT",
+                };
+                console.log(willInsertData);
+                
+                add(user_id, session, 'SYS_TRAN_NO', willInsertData)
+            }
+
+            function getDM(table_name, c) {
+                const d = {
+                    Uid: user_id,
+                    Sid: session,
+                    tablename: table_name,
+                    c: c,
+                    other: '',
+                    cmd: ''
+                };
+                
+                const Url = 'https://DEV.HOMEOS.vn/service/service.svc/';
+                
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: "https://DEV.HOMEOS.vn/service/service.svc/getDm?callback=?",
+                        type: "GET",
+                        dataType: "jsonp",
+                        data: d,
+                        contentType: "application/json; charset=utf-8",
+                        success: function (msg) {
+                            try {
+                                let state = JSON.parse(msg);
+                                resolve(state);  // Trả về dữ liệu khi thành công
+                            } catch (error) {
+                                reject(error);  // Bắt lỗi nếu JSON parse thất bại
+                            }
+                        },
+                        complete: function (data) {
+                            // Có thể thêm xử lý khi request hoàn thành ở đây nếu cần
+                        },
+                        error: function (e, t, x) {
+                            HomeOS.Service.SetActionControl(true);
+                            HomeOS.Service.ShowLabel('Lỗi dữ liệu');
+                            reject(e);  // Trả về lỗi nếu thất bại
+                        }
+                    });
+                });
+            }
+            async function getTranNo() {
+                try {
+                    const data = await getDM('SYS_TRAN_NO', "TABLE_NAME='DM_QRCODE'");
+                    const state = data.data
+                    console.log(state);
+                    let temp = state[0].TRAN_NO || null;
+                    temp = temp.replace(/\[YEAR\]/g, (new Date()).getFullYear());
+                    temp = temp.replace(/\[MONTH\]/g, ((new Date()).getMonth() + 1).toString().padStart(2, '0'));
+                    temp = temp.replace(/\[DAY\]/g, (new Date()).getDate().toString().padStart(2, '0'));
+                    const codes = [];
+                    let auto_key = state[0].AUTO_KEY;
+                    for (let i = 1; i <= startValue; i++) {
+                        auto_key += 1;
+                        const code = temp.replace(/\[AUTO_KEY\]/g, (auto_key).toString().padStart(state[0].LENGTH_KEY, '0'));
+                        codes.push(code);
+                    }
+                    generateQRCodes(codes);
+                    console.log(auto_key, state[0].TABLE_NAME, state[0].TRAN_NO, state[0].LENGTH_KEY);
+                    
+                    updateTranNo(auto_key, state[0].TABLE_NAME, state[0].TRAN_NO, state[0].LENGTH_KEY);
+                } catch (error) {
+                    console.error("Lỗi khi lấy dữ liệu:", error);
+                }
+            }
+
+            async function generateQRCodes(listcode) {
+                const newTab = window.open('', '_blank');
+                if (!newTab || newTab.closed || typeof newTab.closed == 'undefined') {
+                    alert('Tab mới không thể mở. Vui lòng kiểm tra cài đặt popup của trình duyệt.');
+                    return;
+                }
+                let htmlContent = `
+                    <html>
+                    <head>
+                        <title>Print QR Codes</title>
+                        <style>
+                            body {
+                                text-align: center;
+                                padding: 20px;
+                            }
+                            .qr-grid {
+                                display: grid;
+                                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                                gap: 20px;
+                                margin-top: 20px;
+                            }
+                            .qr-item {
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                            }
+                            .qr-item img {
+                                width: 100px;
+                                height: 100px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>QR Code List</h1>
+                        <div class="qr-grid">
+                `;
+                for (const code of listcode) {
+                    // Tạo một <div> tạm để render mã QR
+                    const tempDiv = document.createElement('div');
+                    const qrCode = new QRCode(tempDiv, {
+                        text: code,           // Mã code muốn tạo
+                        width: 100,           // Chiều rộng mã QR
+                        height: 100           // Chiều cao mã QR
+                    });
+
+                    // Chờ QRCode render xong và lấy hình ảnh từ thẻ canvas
+                    const qrDataUrl = await new Promise((resolve) => {
+                        setTimeout(() => {
+                            const canvas = tempDiv.querySelector('canvas');  // Lấy thẻ canvas chứa mã QR
+                            resolve(canvas.toDataURL());                    // Chuyển canvas thành DataURL
+                        }, 500);  // Đợi một thời gian ngắn để chắc chắn mã QR được tạo xong
+                    });
+
+                    // Thêm nội dung HTML vào chuỗi htmlContent
+                    htmlContent += `
+                        <div class="qr-item">
+                            <img src="${qrDataUrl}" alt="QR Code for ${code}" />
+                            <p>${code}</p>
+                        </div>
+                    `;
+                }
+                
+
+
+                // Chèn nội dung HTML vào tab mới
+                newTab.document.write(htmlContent);
+                newTab.document.close();
+
+                const script = newTab.document.createElement("script");
+                script.textContent = "window.onload = function() { window.print(); }";
+                newTab.document.body.appendChild(script);
+            }
+
+            function add(user_id, session, table, data) {
+                const d = {Uid: user_id, Sid:session, tablename:table, jd:JSON.stringify(data), ex:''};
+                
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: "https://DEV.HOMEOS.vn/service/service.svc/ExecuteData?callback=?",
+                        type: "GET",
+                        dataType: "jsonp",
+                        data: d,
+                        contentType: "application/json; charset=utf-8",
+                        success: function (msg) {
+                            try {
+                                let state = JSON.parse(msg);
+                                resolve(state);  // Trả về dữ liệu khi thành công
+                            } catch (error) {
+                                reject(error);  // Bắt lỗi nếu JSON parse thất bại
+                            }
+                        },
+                        complete: function (data) {
+                        },
+                        error: function (e, t, x) {
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
