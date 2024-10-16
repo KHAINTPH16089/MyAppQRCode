@@ -66,47 +66,6 @@
                             localStorage.setItem("USERID", user_id);
                             toastr.success('Login successful! Redirecting to homepage in 3 seconds...');
                             setTimeout(function () {
-                                window.location.href = "/homePage.html";
-                            }, 3000);
-                        } else {
-                            toastr.error(state.StateName);
-                        }
-                    },
-                    complete: function (data) {
-
-                    },
-                    error: function (e, t, x) {
-                        // HomeOS.Login.SetActionControl(true);
-                        // HomeOS.Login.ShowLabel('Lỗi dữ liệu');
-                    }
-                });
-            }
-
-            function checkRoleUserhhh(user_id, password) {
-                const d = {
-                    Uid: user_id,
-                    p: password,
-                    ip: '0.0.0.0',
-                    a: '6fba9a59-46f1-42e6-baea-b2479fa1eb3b'
-                };
-                
-                const Url = 'https://DEV.HOMEOS.vn/service/service.svc/';
-                const baseURL = `${Url}GetSessionId?&&`;
-                const urlWithParams = `${baseURL}${serializeParams(d)}`;
-
-                $.ajax({
-                    url: Url + "GetDm?callback=?",
-                    type: "GET",
-                    dataType: "jsonp",
-                    data: d,
-                    contentType: "application/json; charset=utf-8",
-                    success: function (msg) {
-                        let state = JSON.parse(msg);
-                        if (state && state.StateId !== "LOGIN_FAIL" && state.StateId !== "TOKEN_NOT_ACTIVED" && state.StateId !== "-1") {
-                            localStorage.setItem("UUIDTOKEN_PRINT", state[0].StateId);
-                            localStorage.setItem("USERID", user_id);
-                            toastr.success('Login successful! Redirecting to homepage in 3 seconds...');
-                            setTimeout(function () {
                                 const currentDomain = window.location.origin;  // Lấy phần domain hiện tại (VD: https://example.com)
                                 const customPath = "/homePage.html";
                                 window.location.href = currentDomain + customPath;
