@@ -107,7 +107,9 @@
                             localStorage.setItem("USERID", user_id);
                             toastr.success('Login successful! Redirecting to homepage in 3 seconds...');
                             setTimeout(function () {
-                                window.location.href = "/homePage.html";
+                                const currentDomain = window.location.origin;  // Lấy phần domain hiện tại (VD: https://example.com)
+                                const customPath = "/homePage.html";
+                                window.location.href = currentDomain + customPath;
                             }, 3000);
                         } else {
                             toastr.error(state.StateName);
