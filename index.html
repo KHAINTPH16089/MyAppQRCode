@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script src="./assets/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -192,7 +192,7 @@
             </div>
         </div>
     </div>
-    <script src="./assets/js/cryptojs.min.js"></script>
+    <!-- <script src="./assets/js/cryptojs.min.js"></script> -->
     <script>
         $(document).ready(function () {
             var user_id = localStorage.getItem("USERID");
@@ -209,7 +209,8 @@
                 
                 const user = $('#username').val();
                 const password = $('#password').val();
-                const hashedPassword = CryptoJS.SHA1(password + "@1B2c3D4e5F6g7H8").toString();
+                // const hashedPassword = CryptoJS.SHA1(password + "@1B2c3D4e5F6g7H8").toString();
+                const hashedPassword = sha1Encode(password + "@1B2c3D4e5F6g7H8").toString();
 
                 checkRoleUser(user, hashedPassword);
             });
@@ -343,8 +344,6 @@
                 startValue = parseInt($('#startValue').val()) || 1;
                 getTranNo();
             });
-
-            
 
             // API functions (you need to define these functions or adjust accordingly)
             function callAPI(result) {
@@ -548,6 +547,136 @@
                     });
                 });
             }
+            function sha1Encode(message) {
+    function rotate_left(n, s) {
+        return (n << s) | (n >>> (32 - s));
+    }
+
+    function cvt_hex(val) {
+        let str = "";
+        let i;
+        let v;
+        for (i = 7; i >= 0; i--) {
+            v = (val >>> (i * 4)) & 0x0f;
+            str += v.toString(16);
+        }
+        return str;
+    }
+
+    function utf8_encode(str) {
+        return unescape(encodeURIComponent(str));
+    }
+
+    let blockstart;
+    let i, j;
+    const W = new Array(80);
+    let H0 = 0x67452301;
+    let H1 = 0xEFCDAB89;
+    let H2 = 0x98BADCFE;
+    let H3 = 0x10325476;
+    let H4 = 0xC3D2E1F0;
+    let A, B, C, D, E;
+    let temp;
+
+    message = utf8_encode(message);
+    const msg_len = message.length;
+
+    const word_array = [];
+    for (i = 0; i < msg_len - 3; i += 4) {
+        j = (message.charCodeAt(i) << 24) |
+            (message.charCodeAt(i + 1) << 16) |
+            (message.charCodeAt(i + 2) << 8) |
+            message.charCodeAt(i + 3);
+        word_array.push(j);
+    }
+
+    switch (msg_len % 4) {
+        case 0:
+            i = 0x080000000;
+            break;
+        case 1:
+            i = (message.charCodeAt(msg_len - 1) << 24) | 0x0800000;
+            break;
+        case 2:
+            i = (message.charCodeAt(msg_len - 2) << 24) |
+                (message.charCodeAt(msg_len - 1) << 16) |
+                0x08000;
+            break;
+        case 3:
+            i = (message.charCodeAt(msg_len - 3) << 24) |
+                (message.charCodeAt(msg_len - 2) << 16) |
+                (message.charCodeAt(msg_len - 1) << 8) |
+                0x80;
+            break;
+    }
+
+    word_array.push(i);
+
+    while ((word_array.length % 16) !== 14) word_array.push(0);
+
+    word_array.push(msg_len >>> 29);
+    word_array.push((msg_len << 3) & 0x0ffffffff);
+
+    for (blockstart = 0; blockstart < word_array.length; blockstart += 16) {
+        for (i = 0; i < 16; i++) W[i] = word_array[blockstart + i];
+        for (i = 16; i <= 79; i++) W[i] = rotate_left(W[i - 3] ^ W[i - 8] ^ W[i - 14] ^ W[i - 16], 1);
+
+        A = H0;
+        B = H1;
+        C = H2;
+        D = H3;
+        E = H4;
+
+        for (i = 0; i <= 19; i++) {
+            temp = (rotate_left(A, 5) + ((B & C) | (~B & D)) + E + W[i] + 0x5A827999) & 0x0ffffffff;
+            E = D;
+            D = C;
+            C = rotate_left(B, 30);
+            B = A;
+            A = temp;
+        }
+
+        for (i = 20; i <= 39; i++) {
+            temp = (rotate_left(A, 5) + (B ^ C ^ D) + E + W[i] + 0x6ED9EBA1) & 0x0ffffffff;
+            E = D;
+            D = C;
+            C = rotate_left(B, 30);
+            B = A;
+            A = temp;
+        }
+
+        for (i = 40; i <= 59; i++) {
+            temp = (rotate_left(A, 5) + ((B & C) | (B & D) | (C & D)) + E + W[i] + 0x8F1BBCDC) & 0x0ffffffff;
+            E = D;
+            D = C;
+            C = rotate_left(B, 30);
+            B = A;
+            A = temp;
+        }
+
+        for (i = 60; i <= 79; i++) {
+            temp = (rotate_left(A, 5) + (B ^ C ^ D) + E + W[i] + 0xCA62C1D6) & 0x0ffffffff;
+            E = D;
+            D = C;
+            C = rotate_left(B, 30);
+            B = A;
+            A = temp;
+        }
+
+        H0 = (H0 + A) & 0x0ffffffff;
+        H1 = (H1 + B) & 0x0ffffffff;
+        H2 = (H2 + C) & 0x0ffffffff;
+        H3 = (H3 + D) & 0x0ffffffff;
+        H4 = (H4 + E) & 0x0ffffffff;
+    }
+
+    const sha1hash = cvt_hex(H0) + cvt_hex(H1) + cvt_hex(H2) + cvt_hex(H3) + cvt_hex(H4);
+    return sha1hash.toLowerCase();
+}
+
+// Example usage:
+// console.log(sha1Encode("Hello, World!"));  // Outputs: 943a702d06f34599aee1f8da8ef9f7296031d699
+
         });
     </script>
 </body>
